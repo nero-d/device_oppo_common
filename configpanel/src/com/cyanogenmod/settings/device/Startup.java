@@ -71,7 +71,8 @@ public class Startup extends BroadcastReceiver {
             }
 
             // Disable backtouch settings if needed
-            if (hasGestureService(context)) {
+            if (!context.getResources().getBoolean(
+                        com.android.internal.R.bool.config_enableGestureService)) {
                 disableComponent(context, GesturePadSettings.class.getName());
             } else {
                 IBinder b = ServiceManager.getService("gesture");
@@ -179,26 +180,17 @@ public class Startup extends BroadcastReceiver {
                 InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_FINISH);
     }
 
-    static boolean hasGestureService(Context context) {
-        return !context.getResources().getBoolean(
-                com.android.internal.R.bool.config_enableGestureService);
-    }
-
-    static  boolean hasTouchscreenGestures() {
+    private boolean hasTouchscreenGestures() {
         return new File(Constants.TOUCHSCREEN_CAMERA_NODE).exists() &&
             new File(Constants.TOUCHSCREEN_MUSIC_NODE).exists() &&
             new File(Constants.TOUCHSCREEN_FLASHLIGHT_NODE).exists();
     }
 
-    static boolean hasButtonProcs() {
+    private boolean hasButtonProcs() {
         return (new File(Constants.NOTIF_SLIDER_TOP_NODE).exists() &&
             new File(Constants.NOTIF_SLIDER_MIDDLE_NODE).exists() &&
             new File(Constants.NOTIF_SLIDER_BOTTOM_NODE).exists()) ||
             new File(Constants.BUTTON_SWAP_NODE).exists();
-    }
-
-    static boolean hasOClick() {
-        return Build.MODEL.equals("N1") || Build.MODEL.equals("N3");
     }
 
     private void disableComponent(Context context, String component) {
@@ -218,6 +210,10 @@ public class Startup extends BroadcastReceiver {
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
         }
+    }
+
+    private static boolean hasOClick() {
+        return Build.MODEL.equals("N1") || Build.MODEL.equals("N3");
     }
 
     private void updateOClickServiceState(Context context) {
